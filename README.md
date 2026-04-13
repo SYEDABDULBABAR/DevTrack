@@ -19,5 +19,5 @@ DevTrack aik professional **Project & Task Management API** hai jo FastAPI, SQLM
 
 1. **Clone the Repo:**
    ```bash
-   git clone [https://github.com/your-username/devtrack.git](https://github.com/your-username/devtrack.git)
-   cd devtrack
+   git clone [https://github.com/SYEDABDULBABAR/DevTrack.git](https://github.com/SYEDABDULBABAR/DevTrack.git)
+   cd DevTrack
