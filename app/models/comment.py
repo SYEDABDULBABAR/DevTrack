@@ -18,13 +18,18 @@ class Comment(SQLModel, table=True):
     # Task link: Kis task par comment kiya gaya
     task_id: int = Field(foreign_key="tasks.id", ondelete="CASCADE")
     
-    # User link: Kis ne comment kiya (Optional: agar aap user tracking chahte hain)
-    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    # User link: Kis ne comment kiya (Auth user tracking)
+    user_id: int = Field(foreign_key="users.id")
 
     # --- Relationships ---
     
     # 'task' link wapis Task model se
     task: Optional["Task"] = Relationship(back_populates="comments")
     
-    # 'author' link User model se (agar zaroorat ho)
+    # 'author' link User model se 
     author: Optional["User"] = Relationship()
+
+# Yeh extra class API input handle karne ke liye hai
+class CommentCreate(SQLModel):
+    content: str
+    task_id: int

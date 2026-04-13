@@ -25,3 +25,9 @@ class Project(SQLModel, table=True):
     
     # 'tasks' is project ke andar maujood tamam tasks ki list dega
     tasks: List["Task"] = Relationship(back_populates="project", cascade_delete=True)
+
+    # Is file mein pehle se Project model hoga, uske niche ye add karein:
+
+class ProjectUpdate(SQLModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
