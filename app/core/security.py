@@ -6,20 +6,20 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 
-# Internal imports (Make sure these paths match your project structure)
+# Internal imports (Paths configured for the app structure)
 from app.core.config import settings
 from app.db.database import engine
 from app.models.user import User
 
-# OAuth2 setup
+# OAuth2 setup: Defines where the client should send credentials to get a token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 # --- Hashing Functions ---
 
 def hash_password(password: str) -> str:
     """
-    Password ko secure hash mein convert karta hai.
-    Bcrypt ki 72-character limit ko handle karne ke liye truncate karta hai.
+    Converts a plain-text password into a secure hash.
+    Truncates the input to 72 characters to handle Bcrypt's internal limit.
     """
     pwd_bytes = password.encode('utf-8')[:72]
     salt = bcrypt.gensalt()
@@ -28,7 +28,7 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Check karta hai ke user ka diya hua password sahi hai ya nahi.
+    Verifies whether the provided plain-text password matches the stored hash.
     """
     try:
         password_bytes = plain_password.encode('utf-8')[:72]
@@ -41,7 +41,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """
-    User ke liye JWT token banata hai.
+    Generates a secure JWT (JSON Web Token) for the user.
     """
     to_encode = data.copy()
     if expires_delta:
@@ -57,7 +57,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     """
-    Token check karke current logged-in user ki details nikaalta hai.
+    Validates the token and extracts the details of the currently authenticated user.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -65,6 +65,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        # Decode the token using the secret key and algorithm defined in settings
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
@@ -73,6 +74,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
         
     with Session(engine) as session:
+        # Fetch the user from the database based on the email stored in the token
         user = session.exec(select(User).where(User.email == email)).first()
         if user is None:
             raise credentials_exception

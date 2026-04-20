@@ -1,16 +1,16 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
 
-# Circular import se bachne ke liye TYPE_CHECKING ka use
+# Use TYPE_CHECKING to avoid circular imports during static analysis
 if TYPE_CHECKING:
     from app.models.project import Project
 
-# 1. Base Model (Jo Create aur Update mein kaam aata hai)
+# 1. Base Model (Common fields used for Creation and Updates)
 class UserBase(SQLModel):
     name: str
     email: str = Field(unique=True, index=True)
 
-# 2. Database Model (Jo Table banyega)
+# 2. Database Model (Maps directly to the database table)
 class User(UserBase, table=True):
     __tablename__ = "users"
     
@@ -19,5 +19,5 @@ class User(UserBase, table=True):
     is_active: bool = Field(default=True)
     
     # Relationships
-    # Ek user ke boht saare projects ho sakte hain
+    # One-to-Many: A single user can be the owner of multiple projects
     projects: List["Project"] = Relationship(back_populates="owner")

@@ -6,7 +6,7 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
 
 class ProjectCreate(ProjectBase):
-    pass  # User se input lete waqt
+    pass  # Used for capturing user input during project creation
 
 class ProjectOut(ProjectBase):
     id: int

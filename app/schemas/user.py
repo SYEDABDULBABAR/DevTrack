@@ -3,10 +3,10 @@ from typing import Optional
 
 class UserBase(BaseModel):
     name: str
-    email: EmailStr  # Email format valid karne ke liye
+    email: EmailStr  # Used to validate the email format
 
 class UserCreate(UserBase):
-    password: str  # Registration ke waqt password chahiye
+    password: str  # Required field during user registration
 
 class UserOut(UserBase):
     id: int
@@ -15,7 +15,7 @@ class UserOut(UserBase):
     class Config:
         from_attributes = True
 
-# Token schema (Login ke waqt kaam aayega)
+# Token schema (Used for authentication responses)
 class Token(BaseModel):
     access_token: str
     token_type: str

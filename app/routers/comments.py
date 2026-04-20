@@ -17,15 +17,15 @@ def create_comment(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    # Check if task exists
+    # Check if the task exists
     task = session.get(Task, comment_data.task_id)
     if not task:
-        raise HTTPException(status_code=404, detail="Task nahi mila")
+        raise HTTPException(status_code=404, detail="Task not found")
 
-    # Access check: Sirf wahi banda comment kare jo project ka owner hai
+    # Access check: Only the project owner is allowed to add comments
     project = session.get(Project, task.project_id)
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Aap is task par comment nahi kar sakte")
+        raise HTTPException(status_code=403, detail="You do not have permission to comment on this task")
 
     new_comment = Comment(
         content=comment_data.content,
@@ -45,11 +45,12 @@ def get_task_comments(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
+    # Check if the task exists
     task = session.get(Task, task_id)
     if not task:
-        raise HTTPException(status_code=404, detail="Task nahi mila")
+        raise HTTPException(status_code=404, detail="Task not found")
 
-    # Access check: Sirf project owner hi comments dekh sake
+    # Access check: Only the project owner can view comments
     project = session.get(Project, task.project_id)
     if project.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Permission denied")

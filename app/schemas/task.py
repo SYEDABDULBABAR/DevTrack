@@ -10,7 +10,7 @@ class TaskBase(BaseModel):
     due_date: Optional[datetime] = None
 
 class TaskCreate(TaskBase):
-    project_id: int  # Task banate waqt project batana zaroori hai
+    project_id: int  # Project ID is mandatory when creating a task
 
 class TaskOut(TaskBase):
     id: int

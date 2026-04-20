@@ -5,13 +5,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/devtrack"
 
     # --- JWT / Auth Settings ---
-    # Secret key generate karne ke liye terminal mein likhein: openssl rand -hex 32
+    # To generate a secure secret key, run this command in your terminal: openssl rand -hex 32
     SECRET_KEY: str = "your_super_secret_random_hex_key_here" 
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Token 30 mins baad expire ho jayega
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Token will expire after 30 minutes
 
-    # .env file ko read karne ke liye configuration
+    # Configuration to load values from a .env file
     model_config = SettingsConfigDict(env_file=".env")
 
-# Is variable ko poore project mein use karenge
+# This instance will be used throughout the project to access settings
 settings = Settings()

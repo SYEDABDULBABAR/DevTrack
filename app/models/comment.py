@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 
-# Circular import se bachne ke liye
+# Used to prevent circular imports during type checking
 if TYPE_CHECKING:
     from app.models.task import Task
     from app.models.user import User
@@ -15,21 +15,21 @@ class Comment(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Foreign Keys
-    # Task link: Kis task par comment kiya gaya
+    # Task link: Identifies which task this comment belongs to
     task_id: int = Field(foreign_key="tasks.id", ondelete="CASCADE")
     
-    # User link: Kis ne comment kiya (Auth user tracking)
+    # User link: Identifies the author of the comment (Authenticated user tracking)
     user_id: int = Field(foreign_key="users.id")
 
     # --- Relationships ---
     
-    # 'task' link wapis Task model se
+    # Links back to the Task model
     task: Optional["Task"] = Relationship(back_populates="comments")
     
-    # 'author' link User model se 
+    # Links to the User model to identify the author
     author: Optional["User"] = Relationship()
 
-# Yeh extra class API input handle karne ke liye hai
+# Schema for handling API input during comment creation
 class CommentCreate(SQLModel):
     content: str
     task_id: int

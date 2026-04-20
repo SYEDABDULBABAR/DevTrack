@@ -4,16 +4,16 @@ from jose import JWTError, jwt
 from sqlmodel import Session, select
 from app.db.database import get_session
 from app.models.user import User
-from app.core.config import settings # Apne settings se SECRET_KEY aur ALGORITHM lein
+from app.core.config import settings  # Retrieving SECRET_KEY and ALGORITHM from settings
 
-# Ye line Swagger UI mein 'Authorize' button activate karti hai
+# This line enables the 'Authorize' button in the Swagger UI
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def get_current_user(
     token: str = Depends(oauth2_scheme), 
     session: Session = Depends(get_session)
 ) -> User:
-    # 401 Error for Unauthorized access (Requirement ke mutabiq)
+    # Standard 401 Error for Unauthorized access
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -21,13 +21,14 @@ def get_current_user(
     )
     
     try:
-        # 1. Token decode karein
+        # 1. Decode the JWT token
         payload = jwt.decode(
             token, 
             settings.SECRET_KEY, 
             algorithms=[settings.ALGORITHM]
         )
-        email: str = payload.get("sub") # Token mein sub (subject) email hota hai
+        # Extract email from the 'sub' (subject) claim in the token
+        email: str = payload.get("sub") 
         
         if email is None:
             raise credentials_exception
@@ -35,7 +36,7 @@ def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    # 2. Database mein user ko check karein
+    # 2. Verify the user exists in the database
     statement = select(User).where(User.email == email)
     user = session.exec(statement).first()
 

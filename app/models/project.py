@@ -13,21 +13,20 @@ class Project(SQLModel, table=True):
     title: str = Field(nullable=False)
     description: Optional[str] = Field(default=None)
     
-    # Timestamps (Record rakhne ke liye ke project kab bana)
+    # Timestamps (To track when the project was created)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    # Foreign Key: User table se link
+    # Foreign Key: Link to the User table
     owner_id: int = Field(foreign_key="users.id", ondelete="CASCADE")
 
     # Relationships
-    # 'owner' project banane wale user ki details dega
+    # 'owner' provides details of the user who created the project
     owner: Optional["User"] = Relationship(back_populates="projects")
     
-    # 'tasks' is project ke andar maujood tamam tasks ki list dega
+    # 'tasks' provides a list of all tasks associated with this project
     tasks: List["Task"] = Relationship(back_populates="project", cascade_delete=True)
 
-    # Is file mein pehle se Project model hoga, uske niche ye add karein:
-
+# Schema for handling partial project updates
 class ProjectUpdate(SQLModel):
     title: Optional[str] = None
     description: Optional[str] = None

@@ -33,10 +33,13 @@ def create_task(
     session: Session = Depends(get_session), 
     current_user: User = Depends(get_current_user)
 ):
-    # Check karein ke project exist karta hai aur user uska owner hai
+    # Verify project existence and ownership
     project = session.get(Project, task_data.project_id)
     if not project or project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Aap is project mein task nahi bana sakte")
+        raise HTTPException(
+            status_code=403, 
+            detail="You do not have permission to create tasks in this project"
+        )
 
     new_task = Task(**task_data.model_dump())
     
@@ -52,7 +55,7 @@ def get_tasks(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    # Join logic taake sirf wahi tasks aayein jinke projects user ke hain
+    # Join logic to ensure only tasks belonging to the user's projects are returned
     statement = select(Task).join(Project).where(Project.owner_id == current_user.id)
     
     if status:
@@ -70,7 +73,7 @@ def complete_task(
 ):
     task = session.get(Task, task_id)
     if not task:
-        raise HTTPException(status_code=404, detail="Task nahi mila")
+        raise HTTPException(status_code=404, detail="Task not found")
     
     project = session.get(Project, task.project_id)
     if project.owner_id != current_user.id:
@@ -92,11 +95,11 @@ def update_task(
 ):
     db_task = session.get(Task, task_id)
     if not db_task:
-        raise HTTPException(status_code=404, detail="Task nahi mila")
+        raise HTTPException(status_code=404, detail="Task not found")
     
     project = session.get(Project, db_task.project_id)
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Unauthorized")
+        raise HTTPException(status_code=403, detail="Unauthorized access")
 
     update_data = task_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -116,12 +119,12 @@ def delete_task(
 ):
     db_task = session.get(Task, task_id)
     if not db_task:
-        raise HTTPException(status_code=404, detail="Task nahi mila")
+        raise HTTPException(status_code=404, detail="Task not found")
 
     project = session.get(Project, db_task.project_id)
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Aap ye task delete nahi kar sakte")
+        raise HTTPException(status_code=403, detail="You do not have permission to delete this task")
 
     session.delete(db_task)
     session.commit()
-    return {"message": "Task successfully delete ho gaya"}
+    return {"message": "Task successfully deleted"}

@@ -8,12 +8,12 @@ from typing import List, Optional
 
 # --- SCHEMAS ---
 
-# Project create karne ke liye
+# Schema for creating a new project
 class ProjectCreate(SQLModel):
     title: str
     description: Optional[str] = None
 
-# Project update karne ke liye (Sirf title aur description allow hai)
+# Schema for updating an existing project (Only title and description allowed)
 class ProjectUpdate(SQLModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -40,7 +40,7 @@ def create_project(
     session.refresh(new_project)
     return new_project
 
-# 2. GET: Read All Projects (Sirf wahi jo login user ke hain)
+# 2. GET: Read All Projects (Filtered by the logged-in user)
 @router.get("/", response_model=List[Project])
 def read_projects(
     session: Session = Depends(get_session),
@@ -59,10 +59,10 @@ def read_project(
 ):
     project = session.get(Project, project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="Project nahi mila")
+        raise HTTPException(status_code=404, detail="Project not found")
     
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Aapko is project ko dekhne ki permission nahi hai")
+        raise HTTPException(status_code=403, detail="You do not have permission to view this project")
         
     return project
 
@@ -76,13 +76,13 @@ def update_project(
 ):
     db_project = session.get(Project, project_id)
     if not db_project:
-        raise HTTPException(status_code=404, detail="Project nahi mila")
+        raise HTTPException(status_code=404, detail="Project not found")
     
-    # Check if login user is the owner
+    # Check if the logged-in user is the owner
     if db_project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Aap sirf apna project update kar sakte hain")
+        raise HTTPException(status_code=403, detail="You can only update your own projects")
 
-    # Update only the fields that were provided
+    # Update only the fields that were explicitly provided in the request
     update_data = project_data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_project, key, value)
@@ -101,12 +101,12 @@ def delete_project(
 ):
     db_project = session.get(Project, project_id)
     if not db_project:
-        raise HTTPException(status_code=404, detail="Project nahi mila")
+        raise HTTPException(status_code=404, detail="Project not found")
 
-    # Check if login user is the owner
+    # Check if the logged-in user is the owner
     if db_project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Aap sirf apna project delete kar sakte hain")
+        raise HTTPException(status_code=403, detail="You can only delete your own projects")
 
     session.delete(db_project)
     session.commit()
-    return {"message": f"Project '{db_project.title}' delete ho gaya hai"}
+    return {"message": f"Project '{db_project.title}' has been successfully deleted"}

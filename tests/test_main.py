@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app  # Aapki main FastAPI file
+from app.main import app  # Main FastAPI entry point
 
 client = TestClient(app)
 
@@ -25,23 +25,23 @@ def test_login_user():
 
 # 3. Test: Unauthorized Access (Security Check)
 def test_unauthorized_project_access():
-    # Bina token ke project banane ki koshish
+    # Attempting to create a project without a valid bearer token
     response = client.post("/projects/", json={
         "title": "Hack Project",
         "description": "I don't have a token"
     })
-    assert response.status_code == 401  # Unauthorized hona chahiye
+    assert response.status_code == 401  # Should return Unauthorized
 
 # 4. Test: Create Project (With Token)
 def test_create_project():
-    # Pehle login karke token lena
+    # First, authenticate to retrieve the access token
     login_res = client.post("/auth/login", data={
         "username": "testuser@example.com",
         "password": "testpassword123"
     })
     token = login_res.json()["access_token"]
     
-    # Ab token ke saath project banana
+    # Create a project using the retrieved token in headers
     response = client.post(
         "/projects/", 
         json={"title": "DevTrack Test Project", "description": "Testing project creation"},
@@ -52,12 +52,14 @@ def test_create_project():
 
 # 5. Test: Get My Profile (/users/me)
 def test_get_current_user():
+    # Authenticate to get the token
     login_res = client.post("/auth/login", data={
         "username": "testuser@example.com",
         "password": "testpassword123"
     })
     token = login_res.json()["access_token"]
     
+    # Verify the profile endpoint returns the correct user data
     response = client.get(
         "/users/me", 
         headers={"Authorization": f"Bearer {token}"}
